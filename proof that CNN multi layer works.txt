@@ -1,0 +1,15 @@
+Digit mnist
+
+MLP 20 x 20 divider 100000000.0 epoch 15
+MLP: 94.58%
+CNN 5 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
+CNN: 95.48%
+CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 96.12%
+
+MLP NO HIDDEN LAYERS divider 100000000.0 epoch 15
+MLP: 82.9%
+CNN 5 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
+CNN: 
+CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 

@@ -1,0 +1,9 @@
+layer n: (filter, input/conv layer, pooling)
+
+layer 0: (0, 28x28x1, no)
+layer 1: (5x5x32, 28x28x32, yes)
+layer 2: (5x5x64, 14, 14x14x64, yes)
+
+layer FC: 7 * 7 * 64
+
+MLP hidden layer: 1024

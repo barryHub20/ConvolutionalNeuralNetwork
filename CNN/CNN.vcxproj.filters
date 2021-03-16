@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="CNN">
+      <UniqueIdentifier>{7ff38ffc-f0b6-4cf1-bc6e-f5aec1becee4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Layer">
+      <UniqueIdentifier>{675df3f3-c316-414c-ab10-262c8b9c78fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MLP">
+      <UniqueIdentifier>{98203b64-1daa-4dcc-b4bf-303fb6178335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="neuron">
+      <UniqueIdentifier>{baea98e3-d747-4ee1-8683-d73fa35e661f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{6d5d6489-35a8-44fa-98eb-5f99bdcc4389}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CNN.h">
+      <Filter>CNN</Filter>
+    </ClInclude>
+    <ClInclude Include="CNNConvLayer.h">
+      <Filter>CNN</Filter>
+    </ClInclude>
+    <ClInclude Include="CNNFilter.h">
+      <Filter>CNN</Filter>
+    </ClInclude>
+    <ClInclude Include="Filter.h">
+      <Filter>Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="Layer.h">
+      <Filter>Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="MLP.h">
+      <Filter>MLP</Filter>
+    </ClInclude>
+    <ClInclude Include="MLPNeuron.h">
+      <Filter>MLP</Filter>
+    </ClInclude>
+    <ClInclude Include="Neuron.h">
+      <Filter>neuron</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="CargoCarriage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PassengerCarriage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TrainCarriage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CNN.cpp">
+      <Filter>CNN</Filter>
+    </ClCompile>
+    <ClCompile Include="CNNConvLayer.cpp">
+      <Filter>CNN</Filter>
+    </ClCompile>
+    <ClCompile Include="CNNFilter.cpp">
+      <Filter>CNN</Filter>
+    </ClCompile>
+    <ClCompile Include="Filter.cpp">
+      <Filter>Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="Layer.cpp">
+      <Filter>Layer</Filter>
+    </ClCompile>
+    <ClCompile Include="MLP.cpp">
+      <Filter>MLP</Filter>
+    </ClCompile>
+    <ClCompile Include="MLPNeuron.cpp">
+      <Filter>MLP</Filter>
+    </ClCompile>
+    <ClCompile Include="Neuron.cpp">
+      <Filter>neuron</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

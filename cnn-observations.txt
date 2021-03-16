@@ -1,0 +1,43 @@
+MLP observations:
+-Trained with: 1 hidden layer of 20 neurons (Epoch 30 images 60000)
+-Accuracy when tested with 10k: 94%
+
+-Trained with 1 hidden layer of 100 neurons Epoch 3 images 60000): 46% accuracy, cost settles down to 0.5
+
+CNN observations:
+-using MLP with 1 hidden layer of 20 neurons
+
+1) Without CNN filter weight updates:
+-Iter 59500 Epoch 3 still hovering over 0.4 range
+(if weights aren't updated, then the same FC is always fed into the MLP)
+
+2) With CNN filter weight updates:
+-Iter 59500 Epoch 3 is now flucturating around 0.01 - 0.5
+(if weights are updated, then the FC fed into the MLP will be different)
+
+-Accuracy when tested with 10k: 17%. After a few epoch cost settles down to 0.5.
+
+More observations:
+-iter 2-3 is where the training model seems to be trending downwards
+-on every new epoch, for the first 10000+ iters the cost is back up to 0.5-0.6 range again
+-for certain tests the cost doesn't even trend down to below 0.1 at all, ths points to the init randomized
+values for the filters playing a part
+
+Reason why stuck at 0.5 is because MLP local gradients falls to negative
+
+New test:
+-93.0% accuracy on epoch x3: MLP with 1 hidden layer of 20 neurons
+-93.5% accuracy on epoch x3 CNN of 3 -> 3 filters filter size 13 with MLP with 1 hidden layer of 20 neurons
+ (CNN filters using same randomize divider as MLP)
+-94.3% accuracy for the above if CNN is of 4 -> 4 filters
+
+New test:
+-93.0% HIGHEST accuracy on epoch x3: MLP with 1 hidden layer of 20 neurons
+-94.8% HIGHEST accuracy on epoch x3 CNN of 4 filters filter size 13 with MLP with 1 hidden layer of 20 neurons
+
+New test:
+-92.5% HIGHEST accuracy on epoch x2: MLP with 1 hidden layer of 20 neurons
+-93.6% HIGHEST accuracy on epoch x2 CNN of 4 filters filter size 15 with MLP with 1 hidden layer of 20 neurons
+-92.5% accuracy on epoch x3 CNN of 4 filters filter size 15 with MLP with 1 hidden layer of 20 neurons
+-94.6% HIGHEST accuracy on epoch x2 CNN of 5 filters filter size 11 with MLP with 1 hidden layer of 20 neurons
+-96.9% HIGHEST accuracy on epoch x15 CNN of 5 filters filter size 11 with MLP with 2 hidden layer of 20 neurons

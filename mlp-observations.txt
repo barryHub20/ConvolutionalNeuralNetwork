@@ -1,0 +1,21 @@
+Legend: Series count, learning rate, multiplier layer 1, ~ layer 2, ~ layer 3, pos/neg chance
+Optimal configuration: 30, 0.03, 10000000.0, 1000000.0, 1000.0, rand 50%
+
+More neurons per layer: increases accuracy
+More layers: increases accuracy
+Larger the divider (original 10000000.0 with 3 layers): lower accuracy
+
+Highest accuracy so far:
+100000000.0 / layer
+layers: 784, 100, 90, 10
+
+Logistics function:
+100000000.0 / layer
+(layers: 784, 20, 20, 10)
+
+sigmold: 95.45% n=0.03
+
+ReLU: 95.11% n=0.003
+
+As per observation, ReLU performs roughly the same as sigmold. As per prediction, learning rate for ReLU must be lower or else cost will
+iterate around 1.0 due to linearity of ReLU.
