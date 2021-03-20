@@ -1,6 +1,5 @@
 #pragma once
-#include "CNNConvLayer.h"
-#include "CNNFilter.h"
+#include "CNNPoolingLayer.h"
 #define CNN_FULLY_CONNECTED_SIZE 50000
 
 /************************************************************************************************************
@@ -21,6 +20,7 @@ public:
 	// layers
 	vector< vector<CNNFilter*> > filterList;
 	vector< vector<CNNConvLayer*> > convLayerList;
+	vector< vector<CNNPoolingLayer*> > poolingLayerList;
 
 	// MLP
 	MLP myMlp;
@@ -35,21 +35,21 @@ public:
 
 	// init: totalLayers includes pooling layers
 	void init();
-	void addNewLayer(int layersPerIndex, int filterSize);
+	void addNewLayer(int layersPerIndex, int filterSize, bool pooling);
 
 	// load image
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);
 
 	// train
-	void train(bool showCost, int iteration, int epoch);
-	void forwardPass(bool showCost, int iteration, int epoch, bool testMode);
+	bool train(bool showCost, int iteration, int epoch, ofstream& outputStream);
+	bool forwardPass(bool showCost, int iteration, int epoch, bool testMode, ofstream& outputStream);
 	void backwardPass();
 	void weightsUpdate();
 
 	// save results
-	void saveToTextFile();
+	string logFileName();
 
 	// test
-	void test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd);
+	void test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd, ofstream& outputStream);
 };
 

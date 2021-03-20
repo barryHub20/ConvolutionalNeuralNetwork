@@ -1,18 +1,19 @@
 #include "CNN.h"
-#define TOTAL_EPOCH 15	// 50
+#define TOTAL_EPOCH 3	// 50
 #define TOTAL_ITERATIONS 60000	// 60000
 using namespace std;
 
+string loggingFolderAddr = "../logging/";
 // digits
-//string trainingImagesSet = "digits-mnist/train-images.idx3-ubyte";
-//string trainingLabelsSet = "digits-mnist/train-labels.idx1-ubyte";
-//string testImagesSet = "digits-mnist/t10k-images.idx3-ubyte";
-//string testLabelsSet = "digits-mnist/t10k-labels.idx1-ubyte";
+string trainingImagesSet = "digits-mnist/train-images.idx3-ubyte";
+string trainingLabelsSet = "digits-mnist/train-labels.idx1-ubyte";
+string testImagesSet = "digits-mnist/t10k-images.idx3-ubyte";
+string testLabelsSet = "digits-mnist/t10k-labels.idx1-ubyte";
 // fashion
-string trainingImagesSet = "fashion-mnist/train-images-idx3-ubyte";
-string trainingLabelsSet = "fashion-mnist/train-labels-idx1-ubyte";
-string testImagesSet = "fashion-mnist/t10k-images-idx3-ubyte";
-string testLabelsSet = "fashion-mnist/t10k-labels-idx1-ubyte";
+//string trainingImagesSet = "fashion-mnist/train-images-idx3-ubyte";
+//string trainingLabelsSet = "fashion-mnist/train-labels-idx1-ubyte";
+//string testImagesSet = "fashion-mnist/t10k-images-idx3-ubyte";
+//string testLabelsSet = "fashion-mnist/t10k-labels-idx1-ubyte";
 
 /************************************************************************************************************
 Main
@@ -29,24 +30,41 @@ void runMLP()
 
 	// init
 	MLP myMlp;
-	vector<int> hiddenLayerSizes{ 100, 40 };
+	vector<int> hiddenLayerSizes{ 100, 50 };
 	// customDivider put to -1.0 to not use it
 	myMlp.init(784, hiddenLayerSizes, 10, 0, -1.0);
 
-	// train
-	// train for 60k times
-	for (int x = 0; x < TOTAL_EPOCH; ++x)
+	// file i/o
+	ofstream outputStream(loggingFolderAddr + myMlp.logFileName());
+
+	if (outputStream.is_open())
 	{
-		for (int z = 0; z < TOTAL_ITERATIONS; ++z)
+		// train
+		// train for 60k times
+		for (int x = 0; x < TOTAL_EPOCH; ++x)
 		{
-			// load image
-			myMlp.loadImage(contents, labels, z);
-			myMlp.train(z % 500 == 0, z, x);
+			int correctCounter = 0;
+			for (int z = 0; z < TOTAL_ITERATIONS; ++z)
+			{
+				bool showMetrics = z % 500 == 0 && z != 0;
+
+				// load image
+				myMlp.loadImage(contents, labels, z);
+				if (myMlp.train(showMetrics, z, x, outputStream))
+				{
+					correctCounter++;
+				}
+
+				// accuracy
+				if (showMetrics)
+				{
+					cout << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
+					outputStream << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
+				}
+			}
 		}
 	}
-
-	// save to text file
-
+	outputStream.close();
 
 	// test
 	vector<char> contents2;
@@ -70,15 +88,34 @@ void runCNN()
 	CNN myCnn;
 	myCnn.init();
 
-	// train
-	// train for 60k times
-	for (int x = 0; x < TOTAL_EPOCH; ++x)
+	// file i/o
+	ofstream outputStream(loggingFolderAddr + myCnn.logFileName());
+
+	if (outputStream.is_open())
 	{
-		for (int z = 0; z < TOTAL_ITERATIONS; ++z)
+		// train
+		// train for 60k times
+		for (int x = 0; x < TOTAL_EPOCH; ++x)
 		{
-			// load image
-			myCnn.loadImage(contents, labels, z);
-			myCnn.train(false, z, x);
+			int correctCounter = 0;
+			for (int z = 0; z < TOTAL_ITERATIONS; ++z)
+			{
+				bool showMetrics = z % 500 == 0 && z != 0;
+
+				// load image
+				myCnn.loadImage(contents, labels, z);
+				if (myCnn.train(showMetrics, z, x, outputStream))
+				{
+					correctCounter++;
+				}
+
+				// accuracy
+				if (showMetrics)
+				{
+					cout << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
+					outputStream << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
+				}
+			}
 		}
 	}
 
@@ -87,7 +124,8 @@ void runCNN()
 	vector<char> labels2;
 	readMnistFile(testImagesSet, contents2);
 	readMnistFile(testLabelsSet, labels2);
-	myCnn.test(contents2, labels2, true);
+	myCnn.test(contents2, labels2, true, outputStream);
+	outputStream.close();
 }
 
 void testImageAndLabel()
@@ -104,12 +142,12 @@ int main()
 	// set rand seed
 	srand(14);	// MLP will be 84% on this seed (14), so ideally CNN should too
 
-	// runMLP();
+	runMLP();
 	//for (int i = 0; i < 30; ++i)
 	//{
 	// runCNN();
 	//}
-	runCNN();
+	// runCNN();
 	// testImageAndLabel();
 	/*int size = 27;
 	int filterSize = 5;

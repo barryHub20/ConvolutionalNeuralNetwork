@@ -50,8 +50,8 @@ public:
 	// derive delta values
 	void deriveDeltaValuesFCLayer(int& counter, MLP& myMlp);
 	void deriveDeltaValuesLayer(vector<CNNFilter*>& nextLayerFilters, vector<CNNConvLayer*>& nextlayerConvLayers, int currIndex);	// normal layers
-	void deltaValuesForEachFilter(CNNFilter* resultantFilter, CNNConvLayer* resultantConvLayer);
-	double deltaForEachNeuron(int i, int j, CNNFilter* resultantFilter, CNNConvLayer* resultantConvLayer);
+	void deltaValuesForEachFilter(CNNFilter* filter, CNNConvLayer* convLayer);
+	double deltaForEachNeuron(int i, int j, CNNFilter* filter, CNNConvLayer* convLayer);
 
 	// get
 	int get1DSize();

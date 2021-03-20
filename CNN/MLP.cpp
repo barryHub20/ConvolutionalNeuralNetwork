@@ -65,12 +65,20 @@ void MLP::loadFCLayer(const vector<double>& FCLayer, int imageIndex, int correct
 	costLayer[this->correctIndex] = 1.0;
 }
 
-void MLP::train(bool showCost, int iteration, int epoch)
+void MLP::setCorrectIndex(int imageIndex, int correctIndex)
 {
+	this->imageIndex = imageIndex;
+	this->correctIndex = correctIndex;
+}
+
+bool MLP::train(bool showCost, int iteration, int epoch, ofstream& outputStream)
+{
+	bool isCorrect = false;
 	forwardPass();
-	lossFunction(showCost, iteration, epoch);
+	isCorrect = lossFunction(showCost, iteration, epoch, outputStream);
 	backwardPass();
 	weightsUpdate();
+	return isCorrect;
 }
 
 void MLP::forwardPass()
@@ -85,18 +93,30 @@ void MLP::forwardPass()
 	}
 }
 
-void MLP::lossFunction(bool showCost, int iteration, int epoch)
+// return true if correct choice
+bool MLP::lossFunction(bool showCost, int iteration, int epoch, ofstream& outputStream)
 {
 	// Etotal = sum1/2(target - output)^2
 	double total = 0.0;
 	int lastLayerIdx = layers.size() - 1;
+	int highestActivation = -1000.0;
+	int highestActivationIdx = -1;
 	for (int i = 0; i < costLayer.size(); ++i)
 	{
 		total += (costLayer[i] - layers[lastLayerIdx][i].a) * (costLayer[i] - layers[lastLayerIdx][i].a) * 0.5;
+		if (highestActivation < layers[lastLayerIdx][i].a)
+		{
+			highestActivation = layers[lastLayerIdx][i].a;
+			highestActivationIdx = i;
+		}
 	}
 	if (showCost) {
-		cout << "Iter: " << iteration << "  Epoch: " << epoch << "  Cost: " << total << endl;
+		cout << "Iter: " << setw(5) << left << iteration << "  Epoch: " << setw(2) << left << epoch << 
+		 "  Cost: " << fixed << setprecision(10) << total;
+		outputStream << "Iter: " << setw(5) << left << iteration << "  Epoch: " << setw(2) << left << epoch <<
+			"  Cost: " << fixed << setprecision(10) << total;
 	}
+	return highestActivationIdx == correctIndex;
 }
 
 
@@ -149,9 +169,21 @@ void MLP::weightsUpdate()
 	}
 }
 
-void MLP::saveToTextFile()
+string MLP::logFileName()
 {
+	stringstream ss;
+	ss << "MLP {";
+	for (int i = 1; i < layers.size() - 1; ++i)
+	{
+		ss << layers[i].size();
+		if (i != layers.size() - 2)
+		{
+			ss << ",";
+		}
+	}
+	ss << "}.txt";
 
+	return ss.str();
 }
 
 void MLP::test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd)

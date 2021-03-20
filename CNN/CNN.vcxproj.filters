@@ -57,14 +57,8 @@
     <ClInclude Include="Utilities.h">
       <Filter>Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="CargoCarriage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PassengerCarriage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TrainCarriage.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="CNNPoolingLayer.h">
+      <Filter>CNN</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="Utilities.cpp">
       <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CNNPoolingLayer.cpp">
+      <Filter>CNN</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

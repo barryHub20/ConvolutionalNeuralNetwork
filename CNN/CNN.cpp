@@ -21,34 +21,37 @@ CNN::~CNN()
 			delete convLayerList[i][j];
 		}
 	}
+	for (int i = 0; i < poolingLayerList.size(); ++i)
+	{
+		for (int j = 0; j < poolingLayerList[i].size(); ++j)
+		{
+			delete poolingLayerList[i][j];
+		}
+	}
 }
 
 void CNN::init()
 {
 	CNNFilter* filterPtr = NULL;
 	CNNConvLayer* convLayerPtr = NULL;
+	CNNPoolingLayer* poolingLayerPtr = NULL;
 
 	// impt for now: ensure filter is odd size and input layer is even size
 
 	// layer 1-------------------------------------------------/
 	filterList.push_back(vector<CNNFilter*>());
 	convLayerList.push_back(vector<CNNConvLayer*>());
+	poolingLayerList.push_back(vector<CNNPoolingLayer*>());
 	convLayerPtr = new CNNConvLayer();
 	convLayerPtr->init();
 	convLayerList[0].push_back(convLayerPtr);
+	poolingLayerPtr = new CNNPoolingLayer();
+	poolingLayerPtr->init(convLayerPtr, false);
+	poolingLayerList[0].push_back(poolingLayerPtr);
 
 	// other layers
-	addNewLayer(32, 5);
-	addNewLayer(2, 5);
-
-	// n layer size
-	int nCombinedConvLayerSize = 0;
-	int layerIdx = 2;
-	for (int i = 0; i < convLayerList[layerIdx].size(); ++i)
-	{
-		nCombinedConvLayerSize += convLayerList[layerIdx][i]->get1DSize();
-	}
-	cout << "nCombinedConvLayerSize: " << nCombinedConvLayerSize << endl;
+	addNewLayer(5, 11, true);
+	addNewLayer(2, 7, true);
 
 	// FC layer
 	FCLayerSize = 0;
@@ -59,18 +62,19 @@ void CNN::init()
 	FCLayerVector.resize(FCLayerSize, 0.0);
 
 	// MLP
-	vector<int> hiddenLayerSizes{ 1024 };
+	vector<int> hiddenLayerSizes{ 100, 40 };
 	// customDivider put to -1.0 to not use it
 	myMlp.init(FCLayerSize, hiddenLayerSizes, 10, 0, -1.0);
 }
 
-void CNN::addNewLayer(int layersPerIndex, int filterSize)
+void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling)
 {
 	int lastIndex = convLayerList.size() - 1;
 
 	// new layer vectors
 	filterList.push_back(vector<CNNFilter*>());
 	convLayerList.push_back(vector<CNNConvLayer*>());
+	poolingLayerList.push_back(vector<CNNPoolingLayer*>());
 
 	// each prev conv layer
 	for (int i = 0; i < convLayerList[lastIndex].size(); ++i)
@@ -78,12 +82,18 @@ void CNN::addNewLayer(int layersPerIndex, int filterSize)
 		// layers per index
 		for (int j = 0; j < layersPerIndex; ++j)
 		{
+			// filter
 			CNNFilter* filterPtr = new CNNFilter();
 			filterPtr->init(filterSize, lastIndex + 1, i);
 			filterList[lastIndex + 1].push_back(filterPtr);
+			// conv
 			CNNConvLayer* convLayerPtr = new CNNConvLayer();
 			convLayerPtr->init(convLayerList[lastIndex][i], filterPtr);
 			convLayerList[lastIndex + 1].push_back(convLayerPtr);
+			// pool
+			CNNPoolingLayer* poolingLayerPtr = new CNNPoolingLayer();
+			poolingLayerPtr->init(convLayerPtr, pooling);
+			poolingLayerList[lastIndex + 1].push_back(poolingLayerPtr);
 		}
 	}
 }
@@ -95,16 +105,21 @@ void CNN::loadImage(const vector<char>& contents, const vector<char>& labels, in
 
 	// 1st layer load image
 	convLayerList[0][0]->loadImage(contents, labels, imageIndex);
+
+	// set correct image index on MLP
+	myMlp.setCorrectIndex(this->imageIndex, this->correctIndex);
 }
 
-void CNN::train(bool showCost, int iteration, int epoch)
+bool CNN::train(bool showCost, int iteration, int epoch, ofstream& outputStream)
 {
-	forwardPass(showCost, iteration, epoch, false);
+	bool isCorrect = false;
+	isCorrect = forwardPass(showCost, iteration, epoch, false, outputStream);
 	backwardPass();
 	weightsUpdate();
+	return isCorrect;
 }
 
-void CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode)
+bool CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode, ofstream& outputStream)
 {
 	// for all conv layers except last (last layer is fed into FC)
 	for (int i = 0; i < convLayerList.size() - 1; ++i)
@@ -144,14 +159,16 @@ void CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode)
 	myMlp.loadFCLayer(FCLayerVector, this->imageIndex, this->correctIndex);
 
 	// MLP full training
+	bool isCorrect = false;
 	if (!testMode)
 	{
-		myMlp.train(showCost, iteration, epoch);
+		isCorrect = myMlp.train(showCost, iteration, epoch, outputStream);
 	}
 	else
 	{
 		myMlp.forwardPass();
 	}
+	return isCorrect;
 }
 
 void CNN::backwardPass()
@@ -222,18 +239,33 @@ void CNN::weightsUpdate()
 	}
 }
 
-void CNN::saveToTextFile()
+string CNN::logFileName()
 {
+	stringstream ss;
+	ss << "CNN {";
+	// for each layer
+	for (int i = 1; i < filterList.size(); ++i)
+	{
+		// filters per layer, filter size, have pooling
+		ss << "(" << filterList[i].size() << "," << filterList[i][0]->weightsSize << "," 
+			<< (poolingLayerList[i][0]->pooling ? "yes" : "no") << ")";
+		if (i != filterList.size() - 1)
+		{
+			ss << ",";
+		}
+	}
+	ss << "} " << myMlp.logFileName() << ".txt";
+	return ss.str();
 }
 
-void CNN::test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd)
+void CNN::test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd, ofstream& outputStream)
 {
 	// test all 10k images
 	int correctCounter = 0;
 	for (int i = 0; i < 10000; ++i)
 	{
 		loadImage(contents, labels, i);
-		forwardPass(false, i, 0, true);	// testMode true to prevent MLP from training it's weights
+		forwardPass(false, i, 0, true, outputStream);	// testMode true to prevent MLP from training it's weights
 		int lastLayerIndex = myMlp.layers.size() - 1;	// MLP
 		int brightestNeuron = 0;
 		double brightestNeuronVal = 0.0;
@@ -254,11 +286,11 @@ void CNN::test(const vector<char>& contents, const vector<char>& labels, bool on
 		}
 		if (!onlyShowAccuracyAtEnd && i % 200 == 0 && i != 0 && correctCounter != 0)
 		{
-			cout << "CNN Accuracy%: " << ((double)correctCounter / (double)i) * 100.0 << endl;;
+			cout << "CNN Accuracy%: " << ((double)correctCounter / (double)i) * 100.0 << endl;
 		}
 	}
 	if (onlyShowAccuracyAtEnd)
 	{
-		cout << "CNN Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;;
+		cout << "CNN Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
 	}
 }

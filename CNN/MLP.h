@@ -34,16 +34,17 @@ public:
 	// load dataset
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);
 	void loadFCLayer(const vector<double>& FCLayer, int imageIndex, int correctImageIndex);
+	void setCorrectIndex(int imageIndex, int correctIndex);
 
 	// train
-	void train(bool showCost, int iteration, int epoch);
+	bool train(bool showCost, int iteration, int epoch, ofstream& outputStream);
 	void forwardPass();
-	void lossFunction(bool showCost, int iteration, int epoch);
+	bool lossFunction(bool showCost, int iteration, int epoch, ofstream& outputStream);
 	void backwardPass();
 	void weightsUpdate();
 
 	// save results
-	void saveToTextFile();
+	string logFileName();
 
 	// test
 	void test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd);

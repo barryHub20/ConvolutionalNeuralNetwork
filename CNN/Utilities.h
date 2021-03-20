@@ -9,6 +9,7 @@
 #include <time.h>       /* time */
 #include <iterator>
 #include <bitset>
+#include <iomanip>
 using namespace std;
 const double learningRate = 0.001;
 

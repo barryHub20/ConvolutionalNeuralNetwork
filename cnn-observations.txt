@@ -41,3 +41,6 @@ New test:
 -92.5% accuracy on epoch x3 CNN of 4 filters filter size 15 with MLP with 1 hidden layer of 20 neurons
 -94.6% HIGHEST accuracy on epoch x2 CNN of 5 filters filter size 11 with MLP with 1 hidden layer of 20 neurons
 -96.9% HIGHEST accuracy on epoch x15 CNN of 5 filters filter size 11 with MLP with 2 hidden layer of 20 neurons
+
+Faster way to test:
+-current accuracy while training should be able to accurately show how it's accuracy on the test data will be like

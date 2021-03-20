@@ -7,9 +7,45 @@ CNN: 95.48%
 CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
 CNN: 96.12%
 
-MLP NO HIDDEN LAYERS divider 100000000.0 epoch 15
-MLP: 82.9%
+[highest peak]
+MLP 100 x 40 divider 100000000.0 epoch 15
+MLP: 96.35%
 CNN 5 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
-CNN: 
+CNN: 97.45%
 CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
-CNN: 
+CNN: 97.73%
+
+Obeservation: if use 8 filter size 11, MLP accuracy will fall below MLP-only accuracy.
+Obeservation: if use 6 filter size 11, CNN accuracy will fall to 88.19% instead of 97.45%
+
+MLP 100 x 40 divider 100000000.0 epoch 15
+MLP: 96.35%
+CNN 5 filter size 13 divider 100000000.0 epoch 15 with ^ MLP
+CNN: 97.55%
+CNN (5 filter size 13) -> (10 filter size 9) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 94.44%
+CNN (5 filter size 13) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 96.84%
+
+MLP 500 x 200 divider 100000000.0 epoch 15
+MLP: 97.27%
+MLP 100 x 60 divider 100000000.0 epoch 15
+MLP: 97.06%
+MLP 140 x 90 divider 100000000.0 epoch 15
+MLP: 97.2%
+CNN 5 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
+CNN: 97.52%
+CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 97.33% No need, it's already correlated the more neurons/layers a MLP has, the closer the gap btw MLP and CNN layers
+
+Dataset matters on how many neuron to give. For digit mnist too much neurons after a certain threshold will cause drastic decrease in accuracy.
+
+MLP 100 x 50 divider 100000000.0 epoch 15
+MLP: 96.91%
+CNN 5 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
+CNN: 97.4%
+CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: pointless
+
+MLP 105, 43 CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
+CNN: 97.15%

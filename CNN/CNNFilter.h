@@ -20,10 +20,10 @@ public:
 	void init(int weightsSize, int layer, int index);
 
 	// backpropagation
-	void backpropagation(double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerheight, double** resultantConvLayerDelta,
-		int resultantConvLayerWidth, int resultantConvLayerHeight);
+	void backpropagation(double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerheight, double** convLayerDelta,
+		int convLayerWidth, int convLayerHeight);
 	double gradientForEachWeight(int m, int n, double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerHeight, 
-		double** resultantConvLayerDelta, int resultantConvLayerWidth, int resultantConvLayerHeight);
+		double** convLayerDelta, int convLayerWidth, int convLayerHeight);
 
 	// weights update
 	void weightUpdate();

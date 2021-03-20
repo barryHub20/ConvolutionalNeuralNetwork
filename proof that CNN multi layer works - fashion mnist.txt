@@ -1,8 +1,0 @@
-Fashion mnist
-
-MLP 100 x 40 divider 100000000.0 epoch 15
-MLP: 86.51%
-CNN 25 filter size 11 divider 100000000.0 epoch 15 with ^ MLP
-CNN: 
-CNN (5 filter size 11) -> (10 filter size 7) -> divider 100000000.0 epoch 15 with ^ MLP
-CNN: 

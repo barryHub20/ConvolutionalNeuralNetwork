@@ -9,7 +9,7 @@ CNNConvLayer::CNNConvLayer()
 CNNConvLayer::~CNNConvLayer()
 {
 	// delete dynamic arrays and pointers
-	if (input && inputActivated && deltaValues && inputWidth != 0 && inputHeight != 0)
+	if (input && inputActivated && deltaValues && inputWidth != 0 || inputHeight != 0)
 	{
 		for (int y = 0; y < inputHeight; ++y)
 		{
@@ -55,9 +55,15 @@ void CNNConvLayer::init()
 // init with filter
 void CNNConvLayer::init(CNNConvLayer* prevConvLayer, CNNFilter* prevFilter)
 {
+	// input check
+	if (prevConvLayer->inputWidth % 2 != 0 || prevConvLayer->inputHeight % 2 != 0)
+	{
+		cout << "Conv layer must be of even size" << endl;
+	}
+
 	// params
 	this->inputWidth = prevConvLayer->inputWidth - prevFilter->weightsSize + 1;
-	this->inputHeight = prevConvLayer->inputWidth - prevFilter->weightsSize + 1;
+	this->inputHeight = prevConvLayer->inputHeight - prevFilter->weightsSize + 1;
 	this->layer = prevFilter->layer;
 	this->index = prevFilter->index;
 
@@ -65,7 +71,7 @@ void CNNConvLayer::init(CNNConvLayer* prevConvLayer, CNNFilter* prevFilter)
 	if (prevFilter->padding)
 	{
 		this->inputWidth = prevConvLayer->inputWidth;
-		this->inputHeight = prevConvLayer->inputWidth;
+		this->inputHeight = prevConvLayer->inputHeight;
 	}
 
 	// create the dynamic array
@@ -181,7 +187,7 @@ void CNNConvLayer::deriveDeltaValuesLayer(vector<CNNFilter*>& nextLayerFilters, 
 	}
 }
 
-void CNNConvLayer::deltaValuesForEachFilter(CNNFilter* resultantFilter, CNNConvLayer* resultantConvLayer)
+void CNNConvLayer::deltaValuesForEachFilter(CNNFilter* filter, CNNConvLayer* convLayer)
 {
 	// for each neuron Xl we need to derive it's respective delta
 	for (int j = 0; j < inputHeight; ++j)
@@ -190,25 +196,25 @@ void CNNConvLayer::deltaValuesForEachFilter(CNNFilter* resultantFilter, CNNConvL
 		{
 			// REMOVE SOON
 			// min index will be 0 at min. If it's index is below 0 it's value will always be 0
-			/*int xMin = max(x - resultantFilter->weightsSize + 1, 0);
-			int yMin = max(y - resultantFilter->weightsSize + 1, 0);
+			/*int xMin = max(x - filter->weightsSize + 1, 0);
+			int yMin = max(y - filter->weightsSize + 1, 0);
 			int xMax = x;
 			int yMax = y;*/
 
 			// add to delta
-			deltaValues[j][i] += deltaForEachNeuron(i, j, resultantFilter, resultantConvLayer);
+			deltaValues[j][i] += deltaForEachNeuron(i, j, filter, convLayer);
 		}
 	}
 }
 
-double CNNConvLayer::deltaForEachNeuron(int i, int j, CNNFilter* resultantFilter, CNNConvLayer* resultantConvLayer)
+double CNNConvLayer::deltaForEachNeuron(int i, int j, CNNFilter* filter, CNNConvLayer* convLayer)
 {
-	int k1 = resultantFilter->weightsSize;
-	int k2 = resultantFilter->weightsSize;
+	int k1 = filter->weightsSize;
+	int k2 = filter->weightsSize;
 	double delta = 0.0;
 
 	// consult cnn backpropagation WITH PADDING.txt for more info
-	int padding = (resultantFilter->weightsSize - 1) / 2;
+	int padding = (filter->weightsSize - 1) / 2;
 	int qMinX = (i - k1 + 1) + padding;
 	int qMaxX = (i) + padding;
 	int qMinY = (j - k2 + 1) + padding;
@@ -222,19 +228,19 @@ double CNNConvLayer::deltaForEachNeuron(int i, int j, CNNFilter* resultantFilter
 		for (int m = 0; m < rangeX; ++m)
 		{
 			double d1 = 0.0;
-			if (j - n + padding >= 0 && i - m + padding >= 0 && j - n + padding < resultantConvLayer->inputHeight 
-				&& i - m + padding < resultantConvLayer->inputWidth)
+			if (j - n + padding >= 0 && i - m + padding >= 0 && j - n + padding < convLayer->inputHeight 
+				&& i - m + padding < convLayer->inputWidth)
 			{
-				d1 = resultantConvLayer->deltaValues[j - n + padding][i - m + padding];
+				d1 = convLayer->deltaValues[j - n + padding][i - m + padding];
 			}
 			// REMOVE SOON
 			//// if exceed into padding
 			//if (j - n >= 0 && i - m >= 0)
 			//{
-			//	d1 = resultantConvLayer->deltaValues[j - n][i - m];
+			//	d1 = convLayer->deltaValues[j - n][i - m];
 			//}
 
-			double d2 = resultantFilter->weights[n][m];
+			double d2 = filter->weights[n][m];
 			double d3 = ReLU_Derivative(input[j][i]);
 			delta += d1 * d2 * d3;
 		}

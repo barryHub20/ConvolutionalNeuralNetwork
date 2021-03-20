@@ -79,8 +79,8 @@ void CNNFilter::init(int weightsSize, int layer, int index)
 	}
 }
 
-void CNNFilter::backpropagation(double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerHeight, double** resultantConvLayerDelta,
-	int resultantConvLayerWidth, int resultantConvLayerHeight)
+void CNNFilter::backpropagation(double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerHeight, double** convLayerDelta,
+	int convLayerWidth, int convLayerHeight)
 {
 	// reset
 	for (int y = 0; y < weightsSize; ++y)
@@ -97,31 +97,31 @@ void CNNFilter::backpropagation(double** prevConvLayer, int prevConvLayerWidth, 
 		for (int m = 0; m < weightsSize; ++m)
 		{
 			weightsGradient[n][m] = gradientForEachWeight(m, n, prevConvLayer, prevConvLayerWidth, prevConvLayerHeight,
-				resultantConvLayerDelta, resultantConvLayerWidth, resultantConvLayerHeight);
+				convLayerDelta, convLayerWidth, convLayerHeight);
 		}
 	}
 
 	// bias gradient
 	biasGradient = 0.0;
-	for (int j = 0; j < resultantConvLayerHeight - weightsSize + 1; ++j)
+	for (int j = 0; j < convLayerHeight - weightsSize + 1; ++j)
 	{
-		for (int i = 0; i < resultantConvLayerWidth - weightsSize + 1; ++i)
+		for (int i = 0; i < convLayerWidth - weightsSize + 1; ++i)
 		{
-			biasGradient += resultantConvLayerDelta[j][i];
+			biasGradient += convLayerDelta[j][i];
 		}
 	}
 }
 
 double CNNFilter::gradientForEachWeight(int m, int n, double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerheight,
-	double** resultantConvLayerDelta, int resultantConvLayerWidth, int resultantConvLayerHeight)
+	double** convLayerDelta, int convLayerWidth, int convLayerHeight)
 {
 	int padding = (weightsSize - 1) / 2;
 	double gradient = 0.0;
 	// consult cnn backpropagation WITH PADDING.txt for more info
 	// start from -padding, with padding applied the resultant layer's W/H will always be the same as this layer's
-	for (int j = -padding; j < resultantConvLayerHeight - padding; ++j)
+	for (int j = -padding; j < convLayerHeight - padding; ++j)
 	{
-		for (int i = -padding; i < resultantConvLayerWidth - padding; ++i)
+		for (int i = -padding; i < convLayerWidth - padding; ++i)
 		{
 			double d1 = 0.0;
 			double d2 = 0.0;
@@ -129,7 +129,7 @@ double CNNFilter::gradientForEachWeight(int m, int n, double** prevConvLayer, in
 			// check if is within padding bounds
 			if (j >= 0 && i >= 0)
 			{
-				d1 = resultantConvLayerDelta[j][i];
+				d1 = convLayerDelta[j][i];
 			}
 
 			// check if is within padding bounds
