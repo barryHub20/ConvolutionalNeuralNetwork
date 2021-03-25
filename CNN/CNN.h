@@ -1,5 +1,6 @@
 #pragma once
 #include "CNNPoolingLayer.h"
+#include "CNNConvLayer.h"
 #define CNN_FULLY_CONNECTED_SIZE 50000
 
 /************************************************************************************************************

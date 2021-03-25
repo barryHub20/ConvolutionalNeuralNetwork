@@ -1,5 +1,5 @@
 #include "CNN.h"
-#define TOTAL_EPOCH 3	// 50
+#define TOTAL_EPOCH 35	// 50
 #define TOTAL_ITERATIONS 60000	// 60000
 using namespace std;
 
@@ -30,9 +30,9 @@ void runMLP()
 
 	// init
 	MLP myMlp;
-	vector<int> hiddenLayerSizes{ 100, 50 };
+	vector<int> hiddenLayerSizes{ 100, 40 };
 	// customDivider put to -1.0 to not use it
-	myMlp.init(784, hiddenLayerSizes, 10, 0, -1.0);
+	myMlp.init(784, hiddenLayerSizes, 10);
 
 	// file i/o
 	ofstream outputStream(loggingFolderAddr + myMlp.logFileName());
@@ -74,6 +74,15 @@ void runMLP()
 	myMlp.test(contents2, labels2, true);
 }
 
+void runCNNtest(string testImagesSet, string testLabelsSet, vector<char>& contents, vector<char>& labels, 
+	ofstream& outputStream, CNN& myCnn)
+{
+	// test
+	readMnistFile(testImagesSet, contents);
+	readMnistFile(testLabelsSet, labels);
+	myCnn.test(contents, labels, true, outputStream);
+}
+
 void runCNN()
 {
 	// read pixels and labels
@@ -83,6 +92,12 @@ void runCNN()
 	vector<char> labels;
 	readMnistFile(trainingImagesSet, contents);
 	readMnistFile(trainingLabelsSet, labels);
+
+	// test
+	vector<char> contents2;
+	vector<char> labels2;
+	readMnistFile(testImagesSet, contents2);
+	readMnistFile(testLabelsSet, labels2);
 
 	// init
 	CNN myCnn;
@@ -101,6 +116,7 @@ void runCNN()
 			for (int z = 0; z < TOTAL_ITERATIONS; ++z)
 			{
 				bool showMetrics = z % 500 == 0 && z != 0;
+				bool doTest = z == 30000 || z == 59999;
 
 				// load image
 				myCnn.loadImage(contents, labels, z);
@@ -115,16 +131,16 @@ void runCNN()
 					cout << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 					outputStream << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 				}
+
+				// test
+				if (doTest)
+				{
+					runCNNtest(testImagesSet, testLabelsSet, contents2, labels2, outputStream, myCnn);
+				}
 			}
 		}
 	}
 
-	// test
-	vector<char> contents2;
-	vector<char> labels2;
-	readMnistFile(testImagesSet, contents2);
-	readMnistFile(testLabelsSet, labels2);
-	myCnn.test(contents2, labels2, true, outputStream);
 	outputStream.close();
 }
 
@@ -142,22 +158,13 @@ int main()
 	// set rand seed
 	srand(14);	// MLP will be 84% on this seed (14), so ideally CNN should too
 
-	runMLP();
-	//for (int i = 0; i < 30; ++i)
-	//{
-	// runCNN();
-	//}
-	// runCNN();
-	// testImageAndLabel();
-	/*int size = 27;
-	int filterSize = 5;
-	int padding = (filterSize - 1) / 2;
-	int sizeWithoutPadding = size - (filterSize - 1);
-	int sizeWithPadding = sizeWithoutPadding + padding * 2;
+	// runMLP();
+	runCNN();
 
-	cout << "Layer size: " << size << endl;
-	cout << "filter size: " << filterSize << endl;
-	cout << "padding size: " << padding << endl;
-	cout << "sizeWithoutPadding: " << sizeWithoutPadding << endl;
-	cout << "sizeWithPadding: " << sizeWithPadding << endl;*/
+	/*vector<double> randValues(10, 0.0);
+	randNormalDistribution(randValues, 0, 1);
+	for (int i = 0; i < randValues.size(); ++i)
+	{
+		cout << randValues[i] << endl;
+	}*/
 }

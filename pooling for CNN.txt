@@ -1,0 +1,1 @@
+Pooling layer works as a bypass layer as tested.

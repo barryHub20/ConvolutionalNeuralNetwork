@@ -17,6 +17,17 @@ double ReLU_Derivative(double reluVal)
 	}
 }
 
+void randNormalDistribution(vector<double>& storeValues, int mean, int variance)
+{
+	default_random_engine generator;
+	normal_distribution<double> distribution(mean, variance);
+
+	for (int i = 0; i < storeValues.size(); ++i) {
+		double number = distribution(generator);
+		storeValues[i] = number;
+	}
+}
+
 void readMnistFile(string fileName, vector<char>& contents)
 {
 	ifstream in;

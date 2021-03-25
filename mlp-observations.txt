@@ -19,3 +19,6 @@ ReLU: 95.11% n=0.003
 
 As per observation, ReLU performs roughly the same as sigmold. As per prediction, learning rate for ReLU must be lower or else cost will
 iterate around 1.0 due to linearity of ReLU.
+
+Our custom initialization technique, aka initializing random values with a layer multiplier seems to be consistent with the He and Xavier intitialization techniques
+https://towardsdatascience.com/weight-initialization-techniques-in-neural-networks-26c649eb3b78

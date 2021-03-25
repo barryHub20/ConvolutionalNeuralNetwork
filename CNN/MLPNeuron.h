@@ -32,7 +32,7 @@ public:
 	~MLPNeuron();
 
 	// init
-	void initRandomize(int layer, int index, int totalWeights, int layerOffset, double customDivider);
+	void initRandomize(int layer, int index, int totalWeights);
 	void initAsPixel(int layer, int index, double pixel);
 	void reset();
 

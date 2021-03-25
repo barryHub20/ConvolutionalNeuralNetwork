@@ -1,0 +1,5 @@
+Iter: 500    Epoch: 0   Cost: 0.4424119063  CNN Accuracy%: 11.0000
+Iter: 1000   Epoch: 0   Cost: 0.4459099708  CNN Accuracy%: 10.0000
+Iter: 1500   Epoch: 0   Cost: 0.4856713906  CNN Accuracy%: 10.2667
+Iter: 2000   Epoch: 0   Cost: 0.4014193710  CNN Accuracy%: 10.5000
+Iter: 2500   Epoch: 0   Cost: 0.4722032851  CNN Accuracy%: 9.7600

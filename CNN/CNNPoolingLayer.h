@@ -1,25 +1,15 @@
 #pragma once
-#include "CNNConvLayer.h"
-
-struct PoolNeuron
-{
-	double input;
-	double inputActivated;
-	int xIndex;
-	int yIndex;
-
-	PoolNeuron() {
-		input = inputActivated = 0.0;
-		xIndex = yIndex = -1;
-	}
-};
+#include "CNNFilter.h"
+#include "Layer.h"
 
 class CNNPoolingLayer : public Layer
 {
 public:
 	PoolNeuron** input;
-	CNNConvLayer* convLayer;
 	int inputWidth, inputHeight;
+	int convLayerWidth, convLayerHeight;
+	double** convInput;
+	double** convInputActivated;
 	bool pooling;	// is pooling activated?
 
 public:
@@ -28,8 +18,11 @@ public:
 	~CNNPoolingLayer();
 
 	// init
-	void init(CNNConvLayer* convLayer, bool pooling);
+	void init(int convLayerWidth, int convLayerHeight, double** convInput, double** convInputActivated, bool pooling);
 
 	// perform pooling
 	void performPooling();
+
+	// get
+	int get1DSize();
 };

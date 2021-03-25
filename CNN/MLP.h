@@ -29,7 +29,7 @@ public:
 	~MLP();
 
 	// init
-	void init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses, int layerOffset, double customDivider);
+	void init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses);
 
 	// load dataset
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);

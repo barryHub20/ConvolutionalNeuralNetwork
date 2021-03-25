@@ -7,7 +7,7 @@ MLPNeuron::MLPNeuron()
 }
 MLPNeuron::~MLPNeuron() {}
 
-void MLPNeuron::initRandomize(int layer, int index, int totalWeights, int layerOffset, double customDivider)
+void MLPNeuron::initRandomize(int layer, int index, int totalWeights)
 {
 	reset();
 	this->layer = layer;
@@ -21,15 +21,9 @@ void MLPNeuron::initRandomize(int layer, int index, int totalWeights, int layerO
 	weightsGradient.clear();
 	weights.resize(totalWeights);
 	weightsGradient.resize(totalWeights);
+
 	double divider = 0.0;
-	if (customDivider < 0.0)
-	{
-		divider = 100000000.0 / (layer + layerOffset);	// found to be optimized value
-	}
-	else 
-	{
-		divider = customDivider / (layer + layerOffset);	// use custom divider applied with layerOffset too
-	}
+	divider = 100000000.0 / layer;	// found to be optimized value
 
 	// for each weight
 	for (int i = 0; i < totalWeights; ++i)

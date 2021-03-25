@@ -4,8 +4,7 @@ MLP::MLP() { usingFCLayer = false; }
 MLP::~MLP() {}
 
 // set the layers to pre-defined sizes
-// layerOffset: for when MLP is used in CNN
-void MLP::init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses, int layerOffset, double customDivider)
+void MLP::init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses)
 {
 	// create the neurons
 	layers.resize(hiddenLayersSize.size() + 2);
@@ -21,7 +20,7 @@ void MLP::init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int to
 	// init the neurons (except input layer)
 	for (int i = 1; i < layers.size(); ++i) {
 		for (int j = 0; j < layers[i].size(); ++j) {
-			layers[i][j].initRandomize(i, j, layers[i - 1].size(), layerOffset, customDivider);
+			layers[i][j].initRandomize(i, j, layers[i - 1].size());
 		}
 	}
 }
@@ -195,6 +194,7 @@ void MLP::test(const vector<char>& contents, const vector<char>& labels, bool on
 		loadImage(contents, labels, i);
 		forwardPass();
 		int lastLayerIndex = layers.size() - 1;
+		// get the brightest neuron in last/output layer
 		int brightestNeuron = 0;
 		double brightestNeuronVal = 0.0;
 		for (int j = 0; j < layers[lastLayerIndex].size(); ++j)
@@ -206,19 +206,19 @@ void MLP::test(const vector<char>& contents, const vector<char>& labels, bool on
 			}
 		}
 
-		// does it match?
-		// cout << brightestNeuron << " " << this->correctIndex << endl;
+		// does it match? If yes add to correctCounter
 		if (brightestNeuron == this->correctIndex)
 		{
 			correctCounter++;
 		}
 		if (!onlyShowAccuracyAtEnd && i % 200 == 0 && i != 0 && correctCounter != 0)
 		{
-			cout << "MLP Accuracy%: " << ((double)correctCounter / (double)i) * 100.0 << endl;;
+			cout << "Test dataset 10k: MLP Accuracy%: " << ((double)correctCounter / (double)i) * 100.0 << endl;;
 		}
 	}
+	// only show accuracy one shot at end
 	if (onlyShowAccuracyAtEnd)
 	{
-		cout << "MLP Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;;
+		cout << "Test dataset 10k: MLP Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;;
 	}
 }

@@ -46,25 +46,30 @@ void CNN::init()
 	convLayerPtr->init();
 	convLayerList[0].push_back(convLayerPtr);
 	poolingLayerPtr = new CNNPoolingLayer();
-	poolingLayerPtr->init(convLayerPtr, false);
+	poolingLayerPtr->init(convLayerPtr->inputWidth, convLayerPtr->inputHeight, convLayerPtr->input, convLayerPtr->inputActivated, false);
 	poolingLayerList[0].push_back(poolingLayerPtr);
 
 	// other layers
+	/*addNewLayer(32, 3, false);
+	addNewLayer(1, 3, true);
+	addNewLayer(2, 3, false);
+	addNewLayer(2, 3, true);*/
 	addNewLayer(5, 11, true);
 	addNewLayer(2, 7, true);
 
 	// FC layer
 	FCLayerSize = 0;
-	for (int i = 0; i < convLayerList[convLayerList.size() - 1].size(); ++i)
+	for (int i = 0; i < poolingLayerList[poolingLayerList.size() - 1].size(); ++i)
 	{
-		FCLayerSize += convLayerList[convLayerList.size() - 1][i]->get1DSize();
+		FCLayerSize += poolingLayerList[poolingLayerList.size() - 1][i]->get1DSize();
 	}
 	FCLayerVector.resize(FCLayerSize, 0.0);
 
 	// MLP
-	vector<int> hiddenLayerSizes{ 100, 40 };
+	// vector<int> hiddenLayerSizes{ 512, 128 };
+	vector<int> hiddenLayerSizes{ 140, 100 };
 	// customDivider put to -1.0 to not use it
-	myMlp.init(FCLayerSize, hiddenLayerSizes, 10, 0, -1.0);
+	myMlp.init(FCLayerSize, hiddenLayerSizes, 10);
 }
 
 void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling)
@@ -88,11 +93,11 @@ void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling)
 			filterList[lastIndex + 1].push_back(filterPtr);
 			// conv
 			CNNConvLayer* convLayerPtr = new CNNConvLayer();
-			convLayerPtr->init(convLayerList[lastIndex][i], filterPtr);
+			convLayerPtr->init(poolingLayerList[lastIndex][i], filterPtr);
 			convLayerList[lastIndex + 1].push_back(convLayerPtr);
 			// pool
 			CNNPoolingLayer* poolingLayerPtr = new CNNPoolingLayer();
-			poolingLayerPtr->init(convLayerPtr, pooling);
+			poolingLayerPtr->init(convLayerPtr->inputWidth, convLayerPtr->inputHeight, convLayerPtr->input, convLayerPtr->inputActivated, pooling);
 			poolingLayerList[lastIndex + 1].push_back(poolingLayerPtr);
 		}
 	}
@@ -128,6 +133,9 @@ bool CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode, of
 		for (int j = 0; j < convLayerList[i].size(); ++j)
 		{
 			CNNConvLayer* currConvLayer = convLayerList[i][j];
+
+			// perform pooling
+			poolingLayerList[i][j]->performPooling();
 			
 			// for each filter and resultant conv layer of the next layer
 			for (int k = 0; k < filterList[i + 1].size(); ++k)
@@ -135,22 +143,28 @@ bool CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode, of
 				// if a filter points to currConvLayer, it will be convoluted and output to resultant conv layer (output)
 				if (filterList[i + 1][k]->index == j)
 				{
-					currConvLayer->performConvForNextConvLayer(filterList[i + 1][k], convLayerList[i + 1][k]);
+					convLayerList[i + 1][k]->performConv(poolingLayerList[i][j], filterList[i + 1][k]);
 				}
 			}
 		}
 	}
 
-	// convert last conv layers to FC layer
-	int counter = 0;
-	for (int i = 0; i < convLayerList[convLayerList.size() - 1].size(); ++i)
+	// last FC layer pooling
+	for (int i = 0; i < poolingLayerList[poolingLayerList.size() - 1].size(); ++i)
 	{
-		CNNConvLayer* currConvLayer = convLayerList[convLayerList.size() - 1][i];
-		for (int j = 0; j < currConvLayer->inputHeight; ++j)
+		poolingLayerList[poolingLayerList.size() - 1][i]->performPooling();
+	}
+
+	// convert last conv layers (pooling output) to FC layer
+	int counter = 0;
+	for (int i = 0; i < poolingLayerList[poolingLayerList.size() - 1].size(); ++i)
+	{
+		CNNPoolingLayer* currPoolingLayer = poolingLayerList[poolingLayerList.size() - 1][i];
+		for (int j = 0; j < currPoolingLayer->inputHeight; ++j)
 		{
-			for (int i = 0; i < currConvLayer->inputWidth; ++i)
+			for (int i = 0; i < currPoolingLayer->inputWidth; ++i)
 			{
-				FCLayerVector[counter++] = currConvLayer->inputActivated[j][i];
+				FCLayerVector[counter++] = currPoolingLayer->input[j][i].inputActivated;
 			}
 		}
 	}
@@ -181,17 +195,17 @@ void CNN::backwardPass()
 	// for each last layer
 	for (int i = 0; i < convLayerList[totalLayers - 1].size(); ++i)
 	{
-		convLayerList[totalLayers - 1][i]->deriveDeltaValuesFCLayer(counter, myMlp);
+		convLayerList[totalLayers - 1][i]->deriveDeltaValuesFCLayer(counter, poolingLayerList[totalLayers - 1][i], myMlp);
 	}
 
 	// for each filter of last layer-----------------------------------------------------------------//
 	for (int i = 0; i < filterList[totalLayers - 1].size(); ++i)
 	{
 		CNNFilter* currFilter = filterList[totalLayers - 1][i];
-		CNNConvLayer* prevConvLayer = convLayerList[totalLayers - 2][currFilter->index];	// pointed to
+		CNNPoolingLayer* prevPoolingLayer = poolingLayerList[totalLayers - 2][currFilter->index];	// pointed to
 		CNNConvLayer* resultantConvLayer = convLayerList[totalLayers - 1][i];
 		// backpropagation for last layer
-		currFilter->backpropagation(prevConvLayer->inputActivated, prevConvLayer->inputWidth, prevConvLayer->inputHeight,
+		currFilter->backpropagation(prevPoolingLayer->input, prevPoolingLayer->inputWidth, prevPoolingLayer->inputHeight,
 			resultantConvLayer->deltaValues, resultantConvLayer->inputWidth, resultantConvLayer->inputHeight);
 	}
 
@@ -203,7 +217,7 @@ void CNN::backwardPass()
 		{
 			// derive delta
 			CNNConvLayer* currConvLayer = convLayerList[i][j];
-			currConvLayer->deriveDeltaValuesLayer(filterList[i + 1], convLayerList[i + 1], j);
+			currConvLayer->deriveDeltaValuesLayer(poolingLayerList[i][j], filterList[i + 1], convLayerList[i + 1], j);
 		}
 	}
 
@@ -215,9 +229,9 @@ void CNN::backwardPass()
 		{
 			// derive gradient
 			CNNFilter* currFilter = filterList[i][j];
-			CNNConvLayer* prevConvLayer = convLayerList[i - 1][currFilter->index];
+			CNNPoolingLayer* prevPoolingLayer = poolingLayerList[i - 1][currFilter->index];
 			CNNConvLayer* resultantConvLayer = convLayerList[i][j];
-			currFilter->backpropagation(prevConvLayer->inputActivated, prevConvLayer->inputWidth, prevConvLayer->inputHeight,
+			currFilter->backpropagation(prevPoolingLayer->input, prevPoolingLayer->inputWidth, prevPoolingLayer->inputHeight,
 				resultantConvLayer->deltaValues, resultantConvLayer->inputWidth, resultantConvLayer->inputHeight);
 		}
 	}
@@ -267,6 +281,7 @@ void CNN::test(const vector<char>& contents, const vector<char>& labels, bool on
 		loadImage(contents, labels, i);
 		forwardPass(false, i, 0, true, outputStream);	// testMode true to prevent MLP from training it's weights
 		int lastLayerIndex = myMlp.layers.size() - 1;	// MLP
+		// get the brightest neuron in last/output layer
 		int brightestNeuron = 0;
 		double brightestNeuronVal = 0.0;
 		for (int j = 0; j < myMlp.layers[lastLayerIndex].size(); ++j)
@@ -278,8 +293,7 @@ void CNN::test(const vector<char>& contents, const vector<char>& labels, bool on
 			}
 		}
 
-		// does it match?
-		// cout << brightestNeuron << " " << this->correctIndex << endl;
+		// does it match? If yes add to correctCounter
 		if (brightestNeuron == this->correctIndex)
 		{
 			correctCounter++;
@@ -289,8 +303,10 @@ void CNN::test(const vector<char>& contents, const vector<char>& labels, bool on
 			cout << "CNN Accuracy%: " << ((double)correctCounter / (double)i) * 100.0 << endl;
 		}
 	}
+	// only show accuracy one shot at end
 	if (onlyShowAccuracyAtEnd)
 	{
-		cout << "CNN Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
+		cout << "Test dataset 10k: CNN Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
+		outputStream << "Test dataset 10k: CNN Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
 	}
 }

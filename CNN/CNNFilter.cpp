@@ -79,7 +79,7 @@ void CNNFilter::init(int weightsSize, int layer, int index)
 	}
 }
 
-void CNNFilter::backpropagation(double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerHeight, double** convLayerDelta,
+void CNNFilter::backpropagation(PoolNeuron** prevPoolingLayer, int prevPoolingLayerWidth, int prevPoolingLayerHeight, double** convLayerDelta,
 	int convLayerWidth, int convLayerHeight)
 {
 	// reset
@@ -96,29 +96,29 @@ void CNNFilter::backpropagation(double** prevConvLayer, int prevConvLayerWidth, 
 	{
 		for (int m = 0; m < weightsSize; ++m)
 		{
-			weightsGradient[n][m] = gradientForEachWeight(m, n, prevConvLayer, prevConvLayerWidth, prevConvLayerHeight,
+			weightsGradient[n][m] = gradientForEachWeight(m, n, prevPoolingLayer, prevPoolingLayerWidth, prevPoolingLayerHeight,
 				convLayerDelta, convLayerWidth, convLayerHeight);
 		}
 	}
 
 	// bias gradient
 	biasGradient = 0.0;
-	for (int j = 0; j < convLayerHeight - weightsSize + 1; ++j)
+	for (int j = 0; j < convLayerHeight; ++j)
 	{
-		for (int i = 0; i < convLayerWidth - weightsSize + 1; ++i)
+		for (int i = 0; i < convLayerWidth; ++i)
 		{
 			biasGradient += convLayerDelta[j][i];
 		}
 	}
 }
 
-double CNNFilter::gradientForEachWeight(int m, int n, double** prevConvLayer, int prevConvLayerWidth, int prevConvLayerheight,
+double CNNFilter::gradientForEachWeight(int m, int n, PoolNeuron** prevPoolingLayer, int prevPoolingLayerWidth, int prevPoolingLayerHeight,
 	double** convLayerDelta, int convLayerWidth, int convLayerHeight)
 {
 	int padding = (weightsSize - 1) / 2;
 	double gradient = 0.0;
 	// consult cnn backpropagation WITH PADDING.txt for more info
-	// start from -padding, with padding applied the resultant layer's W/H will always be the same as this layer's
+	// start from -padding, with padding applied the resultant layer's W/H will always be the same as pooling layer's
 	for (int j = -padding; j < convLayerHeight - padding; ++j)
 	{
 		for (int i = -padding; i < convLayerWidth - padding; ++i)
@@ -134,9 +134,9 @@ double CNNFilter::gradientForEachWeight(int m, int n, double** prevConvLayer, in
 
 			// check if is within padding bounds
 			// min index will be 0 at min. If it's index is below 0 it's value will always be 0
-			if (j + n >= 0 && i + m >= 0 && j + n < prevConvLayerheight && i + m < prevConvLayerWidth)
+			if (j + n >= 0 && i + m >= 0 && j + n < prevPoolingLayerHeight && i + m < prevPoolingLayerWidth)
 			{
-				d2 = prevConvLayer[j + n][i + m];
+				d2 = prevPoolingLayer[j + n][i + m].inputActivated;
 			}
 			gradient += d1 * d2;
 			// gradient += abs(d1 * d2);

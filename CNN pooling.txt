@@ -1,0 +1,10 @@
+CNN pooling layer:
+No pooling (bypass layer only): 
+-on epoch 3 iter 500 accuracy starts accelerating
+-test data results is 97.73%
+
+With pooling: 
+-on epoch 9 iter 500 accuracy starts accelerating
+-test data results is 91%
+
+Once I fixed the issues with filter and conv backpropagation not using pooling "winning" deltas the issue is resolved, no more stuck on 0.5 accuraccy

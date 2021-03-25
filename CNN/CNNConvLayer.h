@@ -1,6 +1,6 @@
 #pragma once
-#include "Layer.h"
 #include "CNNFilter.h"
+#include "CNNPoolingLayer.h"
 #include "MLP.h"
 
 /************************************************************************************************************
@@ -39,20 +39,19 @@ public:
 
 	// init
 	void init();	// init as image
-	void init(CNNConvLayer* prevConvLayer, CNNFilter* prevFilter);	// init conv layer with filter
+	void init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter);	// init conv layer with filter
 
 	// each iteration
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);	// only for image layers
 
 	// perform conv for next layer
-	void performConvForNextConvLayer(CNNFilter* nextFilter, CNNConvLayer* nextConvLayer);
+	// void performConvForNextConvLayer(CNNPoolingLayer* poolingLayer, CNNFilter* nextFilter, CNNConvLayer* nextConvLayer);
+	// perform conv for this layer
+	void performConv(CNNPoolingLayer* prevPoolingLayer, CNNFilter* filter);
 
 	// derive delta values
-	void deriveDeltaValuesFCLayer(int& counter, MLP& myMlp);
-	void deriveDeltaValuesLayer(vector<CNNFilter*>& nextLayerFilters, vector<CNNConvLayer*>& nextlayerConvLayers, int currIndex);	// normal layers
-	void deltaValuesForEachFilter(CNNFilter* filter, CNNConvLayer* convLayer);
+	void deriveDeltaValuesFCLayer(int& counter, CNNPoolingLayer* poolingLayer, MLP& myMlp);
+	void deriveDeltaValuesLayer(CNNPoolingLayer* poolingLayer, vector<CNNFilter*>& nextLayerFilters, vector<CNNConvLayer*>& nextlayerConvLayers, int currIndex);	// normal layers
+	void deltaValuesForEachFilter(CNNPoolingLayer* poolingLayer, CNNFilter* filter, CNNConvLayer* convLayer);
 	double deltaForEachNeuron(int i, int j, CNNFilter* filter, CNNConvLayer* convLayer);
-
-	// get
-	int get1DSize();
 };

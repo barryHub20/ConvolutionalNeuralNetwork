@@ -17,6 +17,9 @@ CNN observations:
 
 -Accuracy when tested with 10k: 17%. After a few epoch cost settles down to 0.5.
 
+Our custom initialization technique, aka initializing random values with a layer multiplier seems to be consistent with the He and Xavier intitialization techniques
+https://towardsdatascience.com/weight-initialization-techniques-in-neural-networks-26c649eb3b78
+
 More observations:
 -iter 2-3 is where the training model seems to be trending downwards
 -on every new epoch, for the first 10000+ iters the cost is back up to 0.5-0.6 range again
