@@ -19,6 +19,8 @@ public:
 	// layers
 	vector< vector<MLPNeuron> > layers;
 	vector<double> costLayer;
+	vector<double> dropoutRates;
+	vector< vector<bool> > dropoutInputs;
 
 	// flags
 	bool usingFCLayer;
@@ -29,7 +31,7 @@ public:
 	~MLP();
 
 	// init
-	void init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses);
+	void init(int inputTotalPixels, const vector<int>& hiddenLayersSize, const vector<double>& dropoutRates, int totalOutputClasses);
 
 	// load dataset
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);
@@ -47,5 +49,5 @@ public:
 	string logFileName();
 
 	// test
-	void test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd);
+	void test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd, ofstream& outputStream);
 };

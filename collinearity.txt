@@ -1,0 +1,4 @@
+Neural network notes:
+Refernces: https://www.youtube.com/watch?v=1yXBNKubb2o&ab_channel=GreerViau
+-linear regression: when the performance increases at a constant rate. Don't need a full neural network (with hidden layers) to train.
+-collinearity: different outputs have relations between each other (input/decisions are dependant on each other to be relatively same/larger/smaller than each other)

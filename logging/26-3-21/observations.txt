@@ -1,0 +1,7 @@
+CNN (15,11) (2,7) vs CNN (18,11) (2,7)
+CNN (18,11) (2,7) has more accuracy at start of epoch 21: 96.59 vs 95.44
+
+CNN (21,11) (2,7):
+Time taken for 3 epoch: 31:00 mins
+Each epoch = 10:20 mins
+Est. time for 50 epoch: 10:20 min * 50 = 510 min = 8 hrs 30 min

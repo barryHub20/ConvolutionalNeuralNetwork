@@ -1,0 +1,5 @@
+MLP (100, 40) epoch 15:
+-divider: 10000000, divide by layer: no -> 96.75%
+-divider: 10000000, divide by layer: yes -> 96.7%
+-divider: 100000000, divide by layer: no -> 96.59%
+-divider: 100000000, divide by layer: yes -> 96.35%

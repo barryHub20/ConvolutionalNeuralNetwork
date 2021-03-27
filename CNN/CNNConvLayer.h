@@ -27,10 +27,12 @@ Indexing system:
 class CNNConvLayer : public Layer
 {
 public:
+	bool** dropoutInput;	// unnecessary; all inputs that are 0 will have deltas of 0 too
 	double** input;
 	double** inputActivated;
 	double** deltaValues;	// used to temp. store delta values
 	int inputWidth, inputHeight;
+	double dropoutRate;	// 0.0 - 1.0
 
 public:
 	// functions
@@ -39,7 +41,7 @@ public:
 
 	// init
 	void init();	// init as image
-	void init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter);	// init conv layer with filter
+	void init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter, double dropoutRate);	// init conv layer with filter
 
 	// each iteration
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);	// only for image layers

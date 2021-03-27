@@ -50,12 +50,12 @@ void CNN::init()
 	poolingLayerList[0].push_back(poolingLayerPtr);
 
 	// other layers
-	/*addNewLayer(32, 3, false);
-	addNewLayer(1, 3, true);
-	addNewLayer(2, 3, false);
-	addNewLayer(2, 3, true);*/
-	addNewLayer(5, 11, true);
-	addNewLayer(2, 7, true);
+	addNewLayer(32, 11, true, 0.0);
+	addNewLayer(2, 7, true, 0.0);
+	/*addNewLayer(2, 3, false, 0.0);
+	addNewLayer(2, 3, true, 0.0);*/
+	/*addNewLayer(5, 11, true, 0.25);
+	addNewLayer(2, 7, true, 0.25);*/
 
 	// FC layer
 	FCLayerSize = 0;
@@ -68,11 +68,12 @@ void CNN::init()
 	// MLP
 	// vector<int> hiddenLayerSizes{ 512, 128 };
 	vector<int> hiddenLayerSizes{ 140, 100 };
+	vector<double> dropoutLayer{ 0.0, 0.0 };
 	// customDivider put to -1.0 to not use it
-	myMlp.init(FCLayerSize, hiddenLayerSizes, 10);
+	myMlp.init(FCLayerSize, hiddenLayerSizes, dropoutLayer, 10);
 }
 
-void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling)
+void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling, double dropoutRate)
 {
 	int lastIndex = convLayerList.size() - 1;
 
@@ -93,7 +94,7 @@ void CNN::addNewLayer(int layersPerIndex, int filterSize, bool pooling)
 			filterList[lastIndex + 1].push_back(filterPtr);
 			// conv
 			CNNConvLayer* convLayerPtr = new CNNConvLayer();
-			convLayerPtr->init(poolingLayerList[lastIndex][i], filterPtr);
+			convLayerPtr->init(poolingLayerList[lastIndex][i], filterPtr, dropoutRate);
 			convLayerList[lastIndex + 1].push_back(convLayerPtr);
 			// pool
 			CNNPoolingLayer* poolingLayerPtr = new CNNPoolingLayer();
@@ -268,7 +269,7 @@ string CNN::logFileName()
 			ss << ",";
 		}
 	}
-	ss << "} " << myMlp.logFileName() << ".txt";
+	ss << "} " << myMlp.logFileName();
 	return ss.str();
 }
 

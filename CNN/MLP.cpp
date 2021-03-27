@@ -4,18 +4,27 @@ MLP::MLP() { usingFCLayer = false; }
 MLP::~MLP() {}
 
 // set the layers to pre-defined sizes
-void MLP::init(int inputTotalPixels, const vector<int>& hiddenLayersSize, int totalOutputClasses)
+void MLP::init(int inputTotalPixels, const vector<int>& hiddenLayersSize, const vector<double>& dropoutRates, int totalOutputClasses)
 {
 	// create the neurons
 	layers.resize(hiddenLayersSize.size() + 2);
+	this->dropoutRates.resize(dropoutRates.size() + 2);
+	this->dropoutInputs.resize(dropoutRates.size() + 2);
 	layers[0].resize(inputTotalPixels);	// input layer resize
+	this->dropoutRates[0] = 0.0;
+
 	for (int i = 1; i < layers.size() - 1; ++i)
 	{
 		// hidden layers size
 		layers[i].resize(hiddenLayersSize[i - 1]);
+		// dropout layer assign
+		this->dropoutRates[i] = dropoutRates[i - 1];
+		this->dropoutInputs[i].resize(hiddenLayersSize[i - 1], false);
 	}
 	layers[layers.size() - 1].resize(totalOutputClasses);	// output layer resize
 	costLayer.resize(totalOutputClasses, 0);
+
+	this->dropoutRates[this->dropoutRates.size() - 1] = 0.0;
 
 	// init the neurons (except input layer)
 	for (int i = 1; i < layers.size(); ++i) {
@@ -87,7 +96,23 @@ void MLP::forwardPass()
 	{
 		for (int j = 0; j < layers[i].size(); ++j)
 		{
-			layers[i][j].forwardPass(layers[i - 1]);
+			// is dropout?
+			bool isDropout = false;
+			if (i < layers.size() - 1)
+			{
+				dropoutInputs[i][j] = false;	// reset
+				isDropout = dropoutInputs[i][j] = dropoutRates[i] * 100.0 > (rand() % 100);
+			}
+
+			// no dropout, continue convolution
+			if (!isDropout)
+			{
+				layers[i][j].forwardPass(layers[i - 1]);
+			}
+			else
+			{
+				layers[i][j].forwardPassDropout();
+			}
 		}
 	}
 }
@@ -138,11 +163,17 @@ void MLP::backwardPass()
 
 	// all hidden layers
 	for (int i = lastLayerIdx - 1; i > 0; --i)
-	// for (int i = 1; i <= lastLayerIdx - 1; ++i)
 	{
 		for (int j = 0; j < layers[i].size(); ++j)
 		{
-			layers[i][j].backwardPass(layers[i - 1], layers[i + 1]);
+			if (!dropoutInputs[i][j])
+			{
+				layers[i][j].backwardPass(layers[i - 1], layers[i + 1]);
+			}
+			else
+			{
+				layers[i][j].backwardPassDropout();
+			}
 		}
 	}
 
@@ -180,12 +211,12 @@ string MLP::logFileName()
 			ss << ",";
 		}
 	}
-	ss << "}.txt";
+	ss << "}";
 
 	return ss.str();
 }
 
-void MLP::test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd)
+void MLP::test(const vector<char>& contents, const vector<char>& labels, bool onlyShowAccuracyAtEnd, ofstream& outputStream)
 {
 	// test all 10k images
 	int correctCounter = 0;
@@ -219,6 +250,7 @@ void MLP::test(const vector<char>& contents, const vector<char>& labels, bool on
 	// only show accuracy one shot at end
 	if (onlyShowAccuracyAtEnd)
 	{
-		cout << "Test dataset 10k: MLP Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;;
+		cout << "Test dataset 10k: MLP Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
+		outputStream << "Test dataset 10k: MLP Accuracy%: " << ((double)correctCounter / 10000.0) * 100.0 << endl;
 	}
 }

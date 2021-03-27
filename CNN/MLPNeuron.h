@@ -38,10 +38,12 @@ public:
 
 	// forward pass
 	void forwardPass(const vector<MLPNeuron>& prevLayer);
+	void forwardPassDropout();
 
 	// backward pass
 	void backwardPassOutputLayer(const vector<MLPNeuron>& prevLayer, double cost_m);
 	void backwardPass(const vector<MLPNeuron>& prevLayer, const vector<MLPNeuron>& nextLayer);
+	void backwardPassDropout();
 
 	// weights update
 	void weightsUpdate();

@@ -36,7 +36,7 @@ public:
 
 	// init: totalLayers includes pooling layers
 	void init();
-	void addNewLayer(int layersPerIndex, int filterSize, bool pooling);
+	void addNewLayer(int layersPerIndex, int filterSize, bool pooling, double dropoutRate);
 
 	// load image
 	void loadImage(const vector<char>& contents, const vector<char>& labels, int imageIndex);

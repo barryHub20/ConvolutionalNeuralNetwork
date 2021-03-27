@@ -23,7 +23,7 @@ void MLPNeuron::initRandomize(int layer, int index, int totalWeights)
 	weightsGradient.resize(totalWeights);
 
 	double divider = 0.0;
-	divider = 100000000.0 / layer;	// found to be optimized value
+	divider = 10000000.0;	// found to be NEW optimized value
 
 	// for each weight
 	for (int i = 0; i < totalWeights; ++i)
@@ -76,6 +76,11 @@ void MLPNeuron::forwardPass(const vector<MLPNeuron>& prevLayer)
 	}*/
 }
 
+void MLPNeuron::forwardPassDropout()
+{
+	z = a = 0.0;
+}
+
 void MLPNeuron::backwardPassOutputLayer(const vector<MLPNeuron>& prevLayer, double cost_m)
 {
 	if (prevLayer.size() != weights.size()) {
@@ -126,6 +131,15 @@ void MLPNeuron::backwardPass(const vector<MLPNeuron>& prevLayer, const vector<ML
 	{
 		cout << eq2 << endl;
 	}*/
+}
+
+void MLPNeuron::backwardPassDropout()
+{
+	biasGradient = localGradient = 0.0;
+	for (int i = 0; i < weightsGradient.size(); ++i)
+	{
+		weightsGradient[i] = 0.0;
+	}
 }
 
 void MLPNeuron::weightsUpdate()

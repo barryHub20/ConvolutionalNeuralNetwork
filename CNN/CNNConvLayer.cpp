@@ -3,7 +3,9 @@
 CNNConvLayer::CNNConvLayer()
 {
 	input = inputActivated = deltaValues = NULL;
+	dropoutInput = NULL;
 	inputWidth = inputHeight = 0;
+	dropoutRate = 0.0;
 }
 
 CNNConvLayer::~CNNConvLayer()
@@ -38,22 +40,25 @@ void CNNConvLayer::init()
 	input = new double* [inputHeight];
 	inputActivated = new double* [inputHeight];
 	deltaValues = new double* [inputHeight];
+	dropoutInput = new bool* [inputHeight];
 	for (int y = 0; y < inputHeight; ++y)
 	{
 		input[y] = new double[inputWidth];
 		inputActivated[y] = new double[inputWidth];
 		deltaValues[y] = new double[inputWidth];
+		dropoutInput[y] = new bool[inputWidth];
 		for (int x = 0; x < inputWidth; ++x)
 		{
 			input[y][x] = 0.0;
 			inputActivated[y][x] = 0.0;
 			deltaValues[y][x] = 0.0;
+			dropoutInput[y][x] = false;
 		}
 	}
 }
 
 // init with filter
-void CNNConvLayer::init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter)
+void CNNConvLayer::init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter, double dropoutRate)
 {
 	// input check
 	if (prevPoolingLayer->inputWidth % 2 != 0 || prevPoolingLayer->inputHeight % 2 != 0)
@@ -62,6 +67,7 @@ void CNNConvLayer::init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter
 	}
 
 	// params
+	this->dropoutRate = dropoutRate;
 	this->inputWidth = prevPoolingLayer->inputWidth - prevFilter->weightsSize + 1;
 	this->inputHeight = prevPoolingLayer->inputHeight - prevFilter->weightsSize + 1;
 	this->layer = prevFilter->layer;
@@ -78,16 +84,19 @@ void CNNConvLayer::init(CNNPoolingLayer* prevPoolingLayer, CNNFilter* prevFilter
 	input = new double* [inputHeight];
 	inputActivated = new double* [inputHeight];
 	deltaValues = new double* [inputHeight];
+	dropoutInput = new bool* [inputHeight];
 	for (int y = 0; y < inputHeight; ++y)
 	{
 		input[y] = new double[inputWidth];
 		inputActivated[y] = new double[inputWidth];
 		deltaValues[y] = new double[inputWidth];
+		dropoutInput[y] = new bool[inputWidth];
 		for (int x = 0; x < inputWidth; ++x)
 		{
 			input[y][x] = 0.0;
 			inputActivated[y][x] = 0.0;
 			deltaValues[y][x] = 0.0;
+			dropoutInput[y][x] = false;
 		}
 	}
 }
@@ -116,30 +125,43 @@ void CNNConvLayer::performConv(CNNPoolingLayer* prevPoolingLayer, CNNFilter* fil
 		{
 			for (int i = -padding; i < prevPoolingLayer->inputWidth - padding; ++i)
 			{
-				// convolution
-				double Xvalue = 0.0;
+				// is dropout?
+				dropoutInput[j + padding][i + padding] = false;	// reset
+				dropoutInput[j + padding][i + padding] = dropoutRate * 100.0 > (rand() % 100);
 
-				// for each weight (left -> right, top -> bottom)
-				for (int n = 0; n < filter->weightsSize; ++n)	// y axis
+				// no dropout, continue convolution
+				if (!dropoutInput[j + padding][i + padding])
 				{
-					for (int m = 0; m < filter->weightsSize; ++m)	// x axis
-					{
-						double weightValue = filter->weights[n][m];
-						// i + m, j + n
-						int xIndex = i + m;
-						int yIndex = j + n;
-						double inputValue = 0.0;
-						if (yIndex >= 0 && yIndex < prevPoolingLayer->inputHeight && xIndex >= 0 && xIndex < prevPoolingLayer->inputWidth)
-						{
-							inputValue = prevPoolingLayer->input[yIndex][xIndex].inputActivated;
-						}
-						Xvalue += inputValue * weightValue;
-					}
-				}
+					// convolution
+					double Xvalue = 0.0;
 
-				// save convolution value to resultant conv layer
-				this->input[j + padding][i + padding] = Xvalue + filter->bias;
-				this->inputActivated[j + padding][i + padding] = ReLU_Function(Xvalue + filter->bias);
+					// for each weight (left -> right, top -> bottom)
+					for (int n = 0; n < filter->weightsSize; ++n)	// y axis
+					{
+						for (int m = 0; m < filter->weightsSize; ++m)	// x axis
+						{
+							double weightValue = filter->weights[n][m];
+							// i + m, j + n
+							int xIndex = i + m;
+							int yIndex = j + n;
+							double inputValue = 0.0;
+							if (yIndex >= 0 && yIndex < prevPoolingLayer->inputHeight && xIndex >= 0 && xIndex < prevPoolingLayer->inputWidth)
+							{
+								inputValue = prevPoolingLayer->input[yIndex][xIndex].inputActivated;
+							}
+							Xvalue += inputValue * weightValue;
+						}
+					}
+
+					// save convolution value to resultant conv layer
+					this->input[j + padding][i + padding] = Xvalue + filter->bias;
+					this->inputActivated[j + padding][i + padding] = ReLU_Function(Xvalue + filter->bias);
+				}
+				else
+				{
+					this->input[j + padding][i + padding] = 0.0;
+					this->inputActivated[j + padding][i + padding] = 0.0;
+				}
 			}
 		}
 	}
@@ -165,12 +187,16 @@ void CNNConvLayer::deriveDeltaValuesFCLayer(int& counter, CNNPoolingLayer* pooli
 	{
 		for (int i = 0; i < poolingLayer->inputWidth; ++i)
 		{
-			// get the respective gradient from the FC layer from MLP
-			double delta = myMlp.layers[0][counter++].localGradient;
+			int xIndex = poolingLayer->input[j][i].xIndex;
+			int yIndex = poolingLayer->input[j][i].yIndex;
+			if (!dropoutInput[yIndex][xIndex])
+			{
+				// get the respective gradient from the FC layer from MLP
+				double delta = myMlp.layers[0][counter++].localGradient;
 
-			// map to correct
-			deltaValues[poolingLayer->input[j][i].yIndex][poolingLayer->input[j][i].xIndex] = delta;
-			// cout << "FC delta: " << delta << endl;
+				// map to correct
+				deltaValues[yIndex][xIndex] = delta;
+			}
 		}
 	}
 }
@@ -215,7 +241,10 @@ void CNNConvLayer::deltaValuesForEachFilter(CNNPoolingLayer* poolingLayer, CNNFi
 			// add to delta
 			int yIndex = poolingLayer->input[j][i].yIndex;
 			int xIndex = poolingLayer->input[j][i].xIndex;
-			deltaValues[yIndex][xIndex] += deltaForEachNeuron(xIndex, yIndex, filter, convLayer);
+			if (!dropoutInput[yIndex][xIndex])
+			{
+				deltaValues[yIndex][xIndex] += deltaForEachNeuron(xIndex, yIndex, filter, convLayer);
+			}
 		}
 	}
 }

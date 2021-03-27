@@ -1,5 +1,5 @@
 #include "CNN.h"
-#define TOTAL_EPOCH 35	// 50
+#define TOTAL_EPOCH 100	// 50
 #define TOTAL_ITERATIONS 60000	// 60000
 using namespace std;
 
@@ -18,6 +18,15 @@ string testLabelsSet = "digits-mnist/t10k-labels.idx1-ubyte";
 /************************************************************************************************************
 Main
 *************************************************************************************************************/
+void runMLPtest(string testImagesSet, string testLabelsSet, vector<char>& contents, vector<char>& labels,
+	ofstream& outputStream, MLP& myMlp)
+{
+	// test
+	readMnistFile(testImagesSet, contents);
+	readMnistFile(testLabelsSet, labels);
+	myMlp.test(contents, labels, true, outputStream);
+}
+
 void runMLP()
 {
 	// read pixels and labels
@@ -28,14 +37,21 @@ void runMLP()
 	readMnistFile(trainingImagesSet, contents);
 	readMnistFile(trainingLabelsSet, labels);
 
+	// test
+	vector<char> contents2;
+	vector<char> labels2;
+	readMnistFile(testImagesSet, contents2);
+	readMnistFile(testLabelsSet, labels2);
+
 	// init
 	MLP myMlp;
 	vector<int> hiddenLayerSizes{ 100, 40 };
+	vector<double> dropoutRates{ 0.0, 0.0 };
 	// customDivider put to -1.0 to not use it
-	myMlp.init(784, hiddenLayerSizes, 10);
+	myMlp.init(784, hiddenLayerSizes, dropoutRates, 10);
 
 	// file i/o
-	ofstream outputStream(loggingFolderAddr + myMlp.logFileName());
+	ofstream outputStream(loggingFolderAddr + myMlp.logFileName() + ".txt");
 
 	if (outputStream.is_open())
 	{
@@ -47,6 +63,7 @@ void runMLP()
 			for (int z = 0; z < TOTAL_ITERATIONS; ++z)
 			{
 				bool showMetrics = z % 500 == 0 && z != 0;
+				bool doTest = z == 30000 || z == 59999;
 
 				// load image
 				myMlp.loadImage(contents, labels, z);
@@ -61,17 +78,18 @@ void runMLP()
 					cout << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 					outputStream << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 				}
+
+				// test
+				if (doTest)
+				{
+					cout << "Iter: " << z << "  Epoch: " << x << " - ";
+					outputStream << "Iter: " << z << "  Epoch: " << x << " - ";
+					runMLPtest(testImagesSet, testLabelsSet, contents2, labels2, outputStream, myMlp);
+				}
 			}
 		}
 	}
 	outputStream.close();
-
-	// test
-	vector<char> contents2;
-	vector<char> labels2;
-	readMnistFile(testImagesSet, contents2);
-	readMnistFile(testLabelsSet, labels2);
-	myMlp.test(contents2, labels2, true);
 }
 
 void runCNNtest(string testImagesSet, string testLabelsSet, vector<char>& contents, vector<char>& labels, 
@@ -104,7 +122,7 @@ void runCNN()
 	myCnn.init();
 
 	// file i/o
-	ofstream outputStream(loggingFolderAddr + myCnn.logFileName());
+	ofstream outputStream(loggingFolderAddr + myCnn.logFileName() + ".txt");
 
 	if (outputStream.is_open())
 	{
@@ -135,6 +153,8 @@ void runCNN()
 				// test
 				if (doTest)
 				{
+					cout << "Iter: " << z << "  Epoch: " << x << " - ";
+					outputStream << "Iter: " << z << "  Epoch: " << x << " - ";
 					runCNNtest(testImagesSet, testLabelsSet, contents2, labels2, outputStream, myCnn);
 				}
 			}

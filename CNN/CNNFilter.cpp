@@ -58,7 +58,8 @@ void CNNFilter::init(int weightsSize, int layer, int index)
 	// double divider = 100000000.0 / (layer + 1);	// found to be optimized value
 	// For CNN filter 2 filter layer
 	// double divider = 10000000.0 / (layer + 1);	// found to be optimized value
-	double divider = 100000000.0 / (layer + 1);	// found to be optimized value
+	// double divider = 100000000.0 / (layer + 1);	// found to be optimized value
+	double divider = 10000000.0;	// found to be NEW optimized value
 
 	// for each weight
 	for (int y = 0; y < weightsSize; ++y)
