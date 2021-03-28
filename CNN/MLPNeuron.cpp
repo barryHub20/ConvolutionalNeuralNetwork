@@ -69,11 +69,6 @@ void MLPNeuron::forwardPass(const vector<MLPNeuron>& prevLayer)
 	}
 	z += bias;
 	a = ReLU_Function(z);
-
-	/*if (layer == 1 && index == 5)
-	{
-		cout << a << endl;
-	}*/
 }
 
 void MLPNeuron::forwardPassDropout()
@@ -126,11 +121,21 @@ void MLPNeuron::backwardPass(const vector<MLPNeuron>& prevLayer, const vector<ML
 
 	// local gradient
 	localGradient = eq1 * eq2;
+}
 
-	/*if (layer == 1 && index == 5)
+void MLPNeuron::backwardPassFC(const vector<MLPNeuron>& nextLayer)
+{
+	// weights update, following Google docs
+	double eq1 = 0.0;
+	for (int i = 0; i < nextLayer.size(); ++i)
 	{
-		cout << eq2 << endl;
-	}*/
+		eq1 += nextLayer[i].localGradient * nextLayer[i].weights[index];
+	}
+	// NO eq 2!! FC input layer directly sets the pixel value as A
+	//	double eq2 = ReLU_Derivative(a);
+
+	// local gradient
+	localGradient = eq1;
 }
 
 void MLPNeuron::backwardPassDropout()

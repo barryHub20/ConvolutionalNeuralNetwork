@@ -50,12 +50,8 @@ void CNN::init()
 	poolingLayerList[0].push_back(poolingLayerPtr);
 
 	// other layers
-	addNewLayer(32, 11, true, 0.0);
-	addNewLayer(2, 7, true, 0.0);
-	/*addNewLayer(2, 3, false, 0.0);
-	addNewLayer(2, 3, true, 0.0);*/
-	/*addNewLayer(5, 11, true, 0.25);
-	addNewLayer(2, 7, true, 0.25);*/
+	addNewLayer(5, 11, false, 0.0);
+	addNewLayer(2, 7, false, 0.0);
 
 	// FC layer
 	FCLayerSize = 0;
@@ -66,10 +62,8 @@ void CNN::init()
 	FCLayerVector.resize(FCLayerSize, 0.0);
 
 	// MLP
-	// vector<int> hiddenLayerSizes{ 512, 128 };
-	vector<int> hiddenLayerSizes{ 140, 100 };
+	vector<int> hiddenLayerSizes{ 100, 40 };
 	vector<double> dropoutLayer{ 0.0, 0.0 };
-	// customDivider put to -1.0 to not use it
 	myMlp.init(FCLayerSize, hiddenLayerSizes, dropoutLayer, 10);
 }
 
@@ -133,8 +127,6 @@ bool CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode, of
 		// for each conv layer of this layer
 		for (int j = 0; j < convLayerList[i].size(); ++j)
 		{
-			CNNConvLayer* currConvLayer = convLayerList[i][j];
-
 			// perform pooling
 			poolingLayerList[i][j]->performPooling();
 			
@@ -163,9 +155,9 @@ bool CNN::forwardPass(bool showCost, int iteration, int epoch, bool testMode, of
 		CNNPoolingLayer* currPoolingLayer = poolingLayerList[poolingLayerList.size() - 1][i];
 		for (int j = 0; j < currPoolingLayer->inputHeight; ++j)
 		{
-			for (int i = 0; i < currPoolingLayer->inputWidth; ++i)
+			for (int k = 0; k < currPoolingLayer->inputWidth; ++k)
 			{
-				FCLayerVector[counter++] = currPoolingLayer->input[j][i].inputActivated;
+				FCLayerVector[counter++] = currPoolingLayer->input[j][k].inputActivated;
 			}
 		}
 	}

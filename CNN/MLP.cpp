@@ -137,8 +137,6 @@ bool MLP::lossFunction(bool showCost, int iteration, int epoch, ofstream& output
 	if (showCost) {
 		cout << "Iter: " << setw(5) << left << iteration << "  Epoch: " << setw(2) << left << epoch << 
 		 "  Cost: " << fixed << setprecision(10) << total;
-		outputStream << "Iter: " << setw(5) << left << iteration << "  Epoch: " << setw(2) << left << epoch <<
-			"  Cost: " << fixed << setprecision(10) << total;
 	}
 	return highestActivationIdx == correctIndex;
 }
@@ -180,10 +178,9 @@ void MLP::backwardPass()
 	// first layer
 	if (usingFCLayer)
 	{
-		vector<MLPNeuron> emptyVector;
 		for (int j = 0; j < layers[0].size(); ++j)
 		{
-			layers[0][j].backwardPass(emptyVector, layers[1]);
+			layers[0][j].backwardPassFC(layers[1]);
 		}
 	}
 }

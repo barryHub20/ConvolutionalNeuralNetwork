@@ -1,5 +1,5 @@
 #include "CNN.h"
-#define TOTAL_EPOCH 100	// 50
+#define TOTAL_EPOCH 15	// 50
 #define TOTAL_ITERATIONS 60000	// 60000
 using namespace std;
 
@@ -76,7 +76,6 @@ void runMLP()
 				if (showMetrics)
 				{
 					cout << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
-					outputStream << "  MLP Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 				}
 
 				// test
@@ -147,7 +146,6 @@ void runCNN()
 				if (showMetrics)
 				{
 					cout << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
-					outputStream << "  CNN Accuracy%: " << setprecision(4) << ((double)correctCounter / z) * 100.0 << endl;
 				}
 
 				// test
